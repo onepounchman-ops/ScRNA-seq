@@ -74,39 +74,30 @@ experiment.aggregate <- RunPCA(object = experiment.aggregate,
                                features = VariableFeatures(experiment.aggregate),
                                verbose = F,npcs = 50)
 
-#PCA结果展示-1
 pdf(paste0("./",sam.name,"/PCA-VizDimLoadings.pdf"),width = 7,height = 5)
 VizDimLoadings(experiment.aggregate, dims = 1:2, reduction = "pca")
 dev.off()
 
-#PCA结果展示-2
 pdf(paste0("./",sam.name,"/PCA-DimPlot.pdf"),width = 5,height = 4)
 DimPlot(experiment.aggregate, reduction = "pca")
 dev.off()
 
-#PCA结果展示-3
 pdf(paste0("./",sam.name,"/PCA-DimHeatmap.pdf"))
 DimHeatmap(experiment.aggregate, dims = 1:6, cells = 500, balanced = TRUE)
 dev.off()
 
-#### 8. 确定细胞类群分析PC ####
-#耗时较久
 experiment.aggregate <- JackStraw(experiment.aggregate, num.replicate = 100,dims = 40)
 experiment.aggregate <- ScoreJackStraw(experiment.aggregate, dims = 1:40)
 pdf(paste0("./",sam.name,"/PCA-JackStrawPlot_40.pdf"),width = 6,height = 5)
 JackStrawPlot(object = experiment.aggregate, dims = 1:40)
 dev.off()
 
-#碎石图
 pdf(paste0("./",sam.name,"/PCA-ElbowPlot.pdf"),width = 8,height = 5)
 ElbowPlot(experiment.aggregate,ndims = 40)
 dev.off()
 
-#确定用于细胞分群的PC
 dim.use <- 1:14
 
-#### 9. 细胞分群TSNE算法 ####
-#TSNE算法
 experiment.aggregate <- FindNeighbors(experiment.aggregate, dims = dim.use)
 experiment.aggregate <- FindClusters(experiment.aggregate, resolution = 0.5)
 
@@ -116,14 +107,12 @@ pdf(paste0("./",sam.name,"/CellCluster-TSNEPlot_res0.5_",max(dim.use),"PC.pdf"),
 DimPlot(object = experiment.aggregate, pt.size=0.5,label = T) 
 dev.off()
 
-#按照数据来源分组展示细胞异同--画在一张图中
 pdf(paste0("./",sam.name,"/CellCluster-TSNEPlot_SamGroup_",max(dim.use),"PC.pdf"),width = 8,height = 7)
 DimPlot(object = experiment.aggregate, 
         group.by="orig.ident", 
         pt.size=0.5,reduction = "tsne")
 dev.off()
 
-#按照数据来源分组展示细胞异同--画在多张图中
 pdf(paste0("./",sam.name,"/CellCluster-TSNEPlot_SamGroup_slipt_",max(dim.use),"PC.pdf"),width = 10,height = 4)
 DimPlot(object = experiment.aggregate, 
         split.by ="orig.ident", 
@@ -132,8 +121,6 @@ dev.off()
 
 table(experiment.aggregate@meta.data$orig.ident)
 
-#### 10. 计算marker基因 ####
-#这一步计算的时候可以把min.pct以及logfc.threshold调的比较低，然后再基于结果手动筛选
 all.markers <- FindAllMarkers(experiment.aggregate, only.pos = TRUE, 
                               min.pct = 0.3, logfc.threshold = 0.25)
 write.table(all.markers,
